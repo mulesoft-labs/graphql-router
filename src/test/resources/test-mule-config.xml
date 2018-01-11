@@ -1,0 +1,19 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:graphql="http://www.mulesoft.org/schema/mule/graphql"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+          http://www.mulesoft.org/schema/mule/graphql http://www.mulesoft.org/schema/mule/graphql/current/mule-graphql.xsd">
+
+    <graphql:config name="graphql-config" configName="mygraphql" schemaLocation="schema.graphqls" />
+
+
+    <flow name="router">
+        <graphql:router config-ref="graphql-config" payload="#[payload]"/>
+        <logger level="ERROR" message="#[payload]" />
+    </flow>
+
+    <flow name="graphql:hello">
+        <set-payload value="world" />
+    </flow>
+
+</mule>

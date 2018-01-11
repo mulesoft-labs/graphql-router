@@ -1,0 +1,28 @@
+schema {
+	query: Query
+	mutation: Mutation
+}
+
+type Query{
+	hello: String,
+	person: Person
+}
+
+type Mutation {
+	updatePerson(name: String, age: Int): Person
+}
+
+# This is the simple description of a humble person
+type Person {
+	#this is the name of the person.
+	name: String,
+	age: Int,
+	active: Boolean,
+	car: Car
+}
+
+type Car {
+	make: String,
+	model: String,
+	price: Float
+}
