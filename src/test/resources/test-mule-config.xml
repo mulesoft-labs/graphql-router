@@ -13,6 +13,7 @@
     </flow>
 
     <flow name="graphql:hello">
+        <graphql:graphql-field-resolver config-ref="graphql-config" fieldName="hello"/>
         <set-payload value="world" />
     </flow>
 
