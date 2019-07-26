@@ -39,4 +39,21 @@ public class GraphqlRouterTestCase extends MuleArtifactFunctionalTestCase {
                 "}"));
     }
 
+    @Test
+    public void exerciseRouterPerson() throws Exception {
+
+        String payloadValue = (String) flowRunner("router")
+              .withPayload(new TypedValue<>("{\"query\": \"{person(foo : \\\"bar\\\") {name }}\"}", DataType.JSON_STRING))
+              .run()
+              .getMessage()
+              .getPayload()
+              .getValue();
+
+        assertThat(payloadValue, is("{\n" +
+                "  \"data\": {\n" +
+                "    \"hello\": \"world\"\n" +
+                "  }\n" +
+                "}"));
+    }
+
 }

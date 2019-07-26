@@ -5,7 +5,7 @@ schema {
 
 type Query{
 	hello: String,
-	person: Person
+	person(foo: String): Person
 }
 
 type Mutation {

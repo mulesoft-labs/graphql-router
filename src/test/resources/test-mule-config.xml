@@ -14,6 +14,7 @@
 
     <flow name="graphql:hello">
         <graphql:graphql-field-resolver config-ref="graphql-config" fieldName="hello"/>
+        <logger level="INFO" message="#[payload]" />
         <set-payload value="world" />
     </flow>
 
