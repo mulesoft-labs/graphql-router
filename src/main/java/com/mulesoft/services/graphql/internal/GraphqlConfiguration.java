@@ -9,6 +9,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import org.mule.runtime.api.artifact.Registry;
+import org.mule.runtime.api.exception.DefaultMuleException;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.lifecycle.Startable;
 import org.mule.runtime.extension.api.annotation.Operations;
@@ -18,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.concurrent.BlockingQueue;
@@ -60,29 +63,38 @@ public class GraphqlConfiguration implements Startable {
 
     @Override
     public void start() throws MuleException {
-        logger.info("Starting Graphql configuration with ID: " + getName());
-        SchemaParser schemaParser = new SchemaParser();
-        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(retrieveSchema());
+        try {
+            logger.info("Starting Graphql configuration with ID: " + getName());
+            SchemaParser schemaParser = new SchemaParser();
+            TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(retrieveSchema());
 
-        //FlowCallingWiringFactory wiringFactory = new FlowCallingWiringFactory(muleRegistry, getName());
+            //FlowCallingWiringFactory wiringFactory = new FlowCallingWiringFactory(muleRegistry, getName());
 
-        RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
-                .wiringFactory(wiringFactory)
-                .build();
+            RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
+                    .wiringFactory(wiringFactory)
+                    .build();
 
-        SchemaGenerator schemaGenerator = new SchemaGenerator();
-        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+            SchemaGenerator schemaGenerator = new SchemaGenerator();
+            GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
 
-        engine = GraphQL.newGraphQL(graphQLSchema).build();
-        logger.info("Started Graphql configuration with ID: " + getName());
+            engine = GraphQL.newGraphQL(graphQLSchema).build();
+            logger.info("Started Graphql configuration with ID: " + getName());
+        } catch (IOException e) {
+            throw new DefaultMuleException(e.getMessage(),e);
+        }
     }
 
     public GraphQL getEngine() {
         return engine;
     }
 
-    private Reader retrieveSchema() {
-        return new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream((getSchemaLocation())));
+    private Reader retrieveSchema() throws IOException {
+        String schemaLocation = getSchemaLocation();
+        InputStream schema = Thread.currentThread().getContextClassLoader().getResourceAsStream(schemaLocation);
+        if( schema == null ) {
+            throw new IOException("Schema not found in classpath: "+schemaLocation);
+        }
+        return new InputStreamReader(schema);
     }
 
     public BlockingQueue<GraphqlWiringContext> registerQueue(String queueName) {
