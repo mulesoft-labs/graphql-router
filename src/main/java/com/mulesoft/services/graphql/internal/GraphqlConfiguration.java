@@ -97,7 +97,11 @@ public class GraphqlConfiguration implements Startable {
         return new InputStreamReader(schema);
     }
 
-    public BlockingQueue<GraphqlWiringContext> registerQueue(String queueName) {
-        return wiringFactory.registerQueue(queueName);
+    public void registerResolver(GraphqlFieldResolver resolver) {
+        wiringFactory.registerResolver(resolver);
+    }
+
+    public void unregisterResolver(GraphqlFieldResolver resolver) {
+        wiringFactory.unregisterResolver(resolver);
     }
 }

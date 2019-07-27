@@ -1,13 +1,23 @@
 package com.mulesoft.services.graphql.internal.wiring;
 
+import com.mulesoft.services.graphql.api.GraphqlQuery;
+import com.mulesoft.services.graphql.internal.GraphqlFieldResolver;
+import graphql.execution.ExecutionPath;
 import graphql.language.FieldDefinition;
 import graphql.schema.AsyncDataFetcher;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
+import org.mule.runtime.api.metadata.DataType;
+import org.mule.runtime.api.streaming.CursorProvider;
+import org.mule.runtime.api.transformation.TransformationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,35 +25,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 public class SourcePublishingWiringFactory implements WiringFactory {
-
-    private final Map<String, BlockingQueue<GraphqlWiringContext>> workQueues;
+    private HashSet<GraphqlFieldResolver> resolvers = new HashSet<>();
 
     private static final Logger logger = LoggerFactory.getLogger(SourcePublishingWiringFactory.class);
 
-    public SourcePublishingWiringFactory() {
-        workQueues = new ConcurrentHashMap<>();
-    }
-
-    public BlockingQueue<GraphqlWiringContext> registerQueue(String queueName) throws RuntimeException {
-
-        //TODO - I may need to synchronize this with regards to the work queues to avoid registering 2 queues for the same endpoint.
-
-        BlockingQueue<GraphqlWiringContext> workQueue = workQueues.get(queueName);
-        if (workQueue != null) {
-            logger.debug("Queue {} has been already registered, returning it...", queueName);
-            return workQueue;
-        }
-
-        logger.debug("Registering queue for endpoint {}", queueName);
-
-        //TODO - Harcoding values!!!
-        workQueue = new LinkedBlockingDeque<>(1000);
-
-        workQueues.put(queueName, workQueue);
-
-        return workQueue;
-    }
-
+    @Inject
+    private TransformationService transformationService;
 
     @Override
     public boolean providesDataFetcher(FieldWiringEnvironment environment) {
@@ -51,40 +38,42 @@ public class SourcePublishingWiringFactory implements WiringFactory {
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public DataFetcher getDataFetcher(final FieldWiringEnvironment environment) {
         logger.debug("Called get data fetcher for field name: {}", environment.getFieldDefinition().getName());
 
         return new AsyncDataFetcher(dataFetchingEnvironment -> {
             GraphqlWiringContext context = new GraphqlWiringContext(dataFetchingEnvironment);
-            BlockingQueue<GraphqlWiringContext> queue = getListenerQueue(dataFetchingEnvironment.getFieldDefinition().getDefinition());
 
-            if (queue == null) {
-                logger.warn("Could not find a work queue for field {} and resorted to the default data fetcher!!", dataFetchingEnvironment.getFieldDefinition().getName());
-                return getDefaultDataFetcher(environment).get(dataFetchingEnvironment);
+            for (GraphqlFieldResolver resolver : resolvers) {
+                String match = resolver.getMatch();
+                if( match.equalsIgnoreCase("type:"+dataFetchingEnvironment.getFieldType().getName()) ||
+                        match.equalsIgnoreCase("path:"+dataFetchingEnvironment.getFieldTypeInfo().getPath()) ) {
+                    resolver.handleQuery(context);
+                    try {
+                        context.awaitForResponse(5,TimeUnit.MINUTES);
+                    } catch (InterruptedException e) {
+                        return null;
+                    }
+                    return context.executionResult.orElse(null);
+                }
             }
-
-            try {
-                //TODO - More harcoding!!
-                queue.offer(context, 1, TimeUnit.MINUTES);
-                Object result = context.awaitForResponse(1, TimeUnit.MINUTES);
-                return result;
-            } catch (RuntimeException ex) {
-                logger.error("Timeout wiring field", ex);
-            } catch (Exception ex) {
-                logger.error("Error while wiring field", ex);
+            Object source = context.getDataFetchingEnvironment().getSource();
+            if( source != null ) {
+                if( source instanceof Map ) {
+                    return ((Map) source).get(dataFetchingEnvironment.getFieldDefinition().getName());
+                }
             }
             return null;
         });
     }
 
-    private boolean hasListenerQueue(FieldDefinition definition) {
-        return getListenerQueue(definition) != null;
+    public void registerResolver(GraphqlFieldResolver resolver) {
+        resolvers.add(resolver);
     }
 
-    private BlockingQueue<GraphqlWiringContext> getListenerQueue(FieldDefinition definition) {
-        //define in a single place what will be used to process, either field name or graph path.
-        String fieldName = definition.getName();
-        return workQueues.get(fieldName);
+    public void unregisterResolver(GraphqlFieldResolver resolver) {
+        resolvers.remove(resolver);
     }
 }

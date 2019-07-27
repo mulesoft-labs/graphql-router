@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FlowCallingWiringFactory implements WiringFactory {
 
@@ -71,9 +72,11 @@ public class FlowCallingWiringFactory implements WiringFactory {
         logger.info("Need to invoke the flow: " + flow.getName());
 
 
+        Map<String, DataFetchingEnvironment> env = Collections.singletonMap("dataFetchingEnvironment", environment);
+
         Message msg = Message.builder()
                 .nullValue()
-                .attributesValue(Collections.singletonMap("dataFetchingEnvironment", environment))
+                .attributesValue(env)
                 .build();
 
         CoreEvent evt = CoreEvent.builder(EventContextFactory.create(flow, DefaultComponentLocation.fromSingleComponent(configName))).message(msg).build();
