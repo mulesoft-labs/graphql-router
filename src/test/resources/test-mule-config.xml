@@ -25,7 +25,7 @@
         <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person"/>
         <logger level="ERROR" message="---- PERSON ----" />
         <logger level="ERROR" message="#[payload]" />
-        <set-payload value="#[output application/java --- { 'name': 'john smith' }]" />
+        <set-payload value="#[output application/java --- { 'name': 'john smith', 'car': { 'model': 'honda' } }]" />
     </flow>
 
 </mule>

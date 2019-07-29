@@ -17,7 +17,7 @@ type Person {
 	#this is the name of the person.
 	name: String,
 	age: Int,
-	active: Boolean,
+	active(query: String): Boolean,
 	car: Car
 }
 

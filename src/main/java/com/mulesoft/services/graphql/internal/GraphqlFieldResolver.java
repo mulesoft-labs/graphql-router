@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 @EmitsResponse
 @MetadataScope(outputResolver = RouterOuputTypeResolver.class)
-public class GraphqlFieldResolver extends Source<DataFetchingEnvironment, GraphqlWiringAttributes> {
+public class GraphqlFieldResolver extends Source<GraphQLRequest, GraphqlWiringAttributes> {
 
     private static final Logger logger = LoggerFactory.getLogger(GraphqlFieldResolver.class);
     public static final String WIRING_CONTEXT = "wiringContext";
@@ -39,43 +39,12 @@ public class GraphqlFieldResolver extends Source<DataFetchingEnvironment, Graphq
     private boolean listening;
 
     private Executor executor;
-    private SourceCallback<DataFetchingEnvironment, GraphqlWiringAttributes> sourceCallback;
+    private SourceCallback<GraphQLRequest, GraphqlWiringAttributes> sourceCallback;
 
     @Override
-    public void onStart(SourceCallback<DataFetchingEnvironment, GraphqlWiringAttributes> sourceCallback) throws MuleException {
+    public void onStart(SourceCallback<GraphQLRequest, GraphqlWiringAttributes> sourceCallback) throws MuleException {
         config.registerResolver(this);
         this.sourceCallback = sourceCallback;
-
-//        executor = Executors.newSingleThreadExecutor();
-//        executor.execute(() -> {
-//
-//            Thread.currentThread().setName("graphql-field-" + fieldName);
-//
-//            logger.debug("Listenting for messages in the queue for field {}", fieldName);
-//
-//            try {
-//                while (listening) {
-//                    GraphqlWiringContext wiringContext = queue.poll(100, TimeUnit.MILLISECONDS);
-//                    if (wiringContext == null) {
-//                        continue;
-//                    }
-//                    logger.debug("Received message for field {}", fieldName);
-//                    SourceCallbackContext context = sourceCallback.createContext();
-//                    context.addVariable(WIRING_CONTEXT, wiringContext);
-//
-//                    //prepare the message
-//                    DataFetchingEnvironment dataFetchingEnvironment = wiringContext.getDataFetchingEnvironment();
-//                    DefaultGraphqlWiringAttributes attributes = new DefaultGraphqlWiringAttributes(dataFetchingEnvironment);
-//
-//                    //handle it!
-//                    sourceCallback.handle(Result.<DataFetchingEnvironment,GraphqlWiringAttributes>builder()
-//                            .output(dataFetchingEnvironment)
-//                            .attributes(attributes).build(), context);
-//                }
-//            } catch (InterruptedException ex) {
-//                logger.error("Error while processing graphql data");
-//            }
-//        });
     }
 
     @OnSuccess
@@ -110,13 +79,11 @@ public class GraphqlFieldResolver extends Source<DataFetchingEnvironment, Graphq
         SourceCallbackContext context = sourceCallback.createContext();
         context.addVariable(WIRING_CONTEXT, wiringContext);
 
-        //prepare the message
-        DataFetchingEnvironment dataFetchingEnvironment = wiringContext.getDataFetchingEnvironment();
-        DefaultGraphqlWiringAttributes attributes = new DefaultGraphqlWiringAttributes(dataFetchingEnvironment);
+        DefaultGraphqlWiringAttributes attributes = new DefaultGraphqlWiringAttributes(wiringContext.getDataFetchingEnvironment());
 
         //handle it!
-        sourceCallback.handle(Result.<DataFetchingEnvironment,GraphqlWiringAttributes>builder()
-                .output(dataFetchingEnvironment)
+        sourceCallback.handle(Result.<GraphQLRequest,GraphqlWiringAttributes>builder()
+                .output(new GraphQLRequest(wiringContext.getDataFetchingEnvironment()))
                 .attributes(attributes).build(), context);
     }
 }
