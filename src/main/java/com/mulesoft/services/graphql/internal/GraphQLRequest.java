@@ -4,6 +4,7 @@ import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public class GraphQLRequest {
     private String path;
     private String type;
     private Map<String,Object> args;
-    private final List<GraphQLSelection> selection = new ArrayList<>();
+    private Map<String,GraphQLSelection> selection = new HashMap<>();
 
     public GraphQLRequest(DataFetchingEnvironment dataFetchingEnvironment) {
         name = dataFetchingEnvironment.getFieldDefinition().getName();
@@ -21,7 +22,7 @@ public class GraphQLRequest {
         args = dataFetchingEnvironment.getArguments();
         for (List<Field> fields : dataFetchingEnvironment.getSelectionSet().get().values()) {
             for (Field field : fields) {
-                selection.add(new GraphQLSelection(field));
+                selection.put(field.getName(),new GraphQLSelection(field));
             }
         }
     }
@@ -58,7 +59,11 @@ public class GraphQLRequest {
         this.args = args;
     }
 
-    public List<GraphQLSelection> getSelection() {
+    public Map<String, GraphQLSelection> getSelection() {
         return selection;
+    }
+
+    public void setSelection(Map<String, GraphQLSelection> selection) {
+        this.selection = selection;
     }
 }

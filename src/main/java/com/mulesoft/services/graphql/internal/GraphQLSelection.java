@@ -9,7 +9,7 @@ import java.util.List;
 public class GraphQLSelection {
     private String name;
     private HashMap<String, Object> args;
-    private List<GraphQLSelection> subs;
+    private HashMap<String,GraphQLSelection> childrens = new HashMap<>();
 
     public GraphQLSelection(Field field) {
         name = field.getName();
@@ -17,12 +17,12 @@ public class GraphQLSelection {
         for (Argument argument : field.getArguments()) {
             args.put(argument.getName(), valueToObj(argument.getValue()));
         }
-        subs = new ArrayList<>();
         if (field.getSelectionSet() != null && field.getSelectionSet().getSelections() != null) {
             List<Selection> selections = field.getSelectionSet().getSelections();
             for (Selection selection : selections) {
                 if( selection instanceof Field ) {
-                    subs.add(new GraphQLSelection((Field)selection));
+                    Field selField = (Field) selection;
+                    childrens.put(selField.getName(),new GraphQLSelection(selField));
                 }
             }
         }
@@ -44,12 +44,12 @@ public class GraphQLSelection {
         this.args = args;
     }
 
-    public List<GraphQLSelection> getSubs() {
-        return subs;
+    public HashMap<String, GraphQLSelection> getChildrens() {
+        return childrens;
     }
 
-    public void setSubs(List<GraphQLSelection> subs) {
-        this.subs = subs;
+    public void setChildrens(HashMap<String, GraphQLSelection> childrens) {
+        this.childrens = childrens;
     }
 
     public static Object valueToObj(Value value) {

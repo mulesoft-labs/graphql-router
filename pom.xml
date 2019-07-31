@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>b7ddb4e8-cc87-430d-a5a0-f92535cd7b63</groupId>
     <artifactId>mule-module-graphql</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>mule-extension</packaging>
     <name>Mule-module-graphql Extension</name>
 
