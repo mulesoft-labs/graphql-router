@@ -1,5 +1,6 @@
-package com.mulesoft.services.graphql.internal;
+package com.mulesoft.services.graphql.api;
 
+import com.mulesoft.services.graphql.internal.GraphQLSelection;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
 
@@ -12,8 +13,9 @@ public class GraphQLRequest {
     private String name;
     private String path;
     private String type;
-    private Map<String,Object> args;
-    private Map<String,GraphQLSelection> selection = new HashMap<>();
+    private Map<String, Object> args;
+    private Map<String, GraphQLSelection> selection = new HashMap<>();
+    private List<GraphQLSelection> selectionList = new ArrayList<>();
 
     public GraphQLRequest(DataFetchingEnvironment dataFetchingEnvironment) {
         name = dataFetchingEnvironment.getFieldDefinition().getName();
@@ -22,7 +24,9 @@ public class GraphQLRequest {
         args = dataFetchingEnvironment.getArguments();
         for (List<Field> fields : dataFetchingEnvironment.getSelectionSet().get().values()) {
             for (Field field : fields) {
-                selection.put(field.getName(),new GraphQLSelection(field));
+                GraphQLSelection sel = new GraphQLSelection(field);
+                selection.put(field.getName(), sel);
+                selectionList.add(sel);
             }
         }
     }
@@ -65,5 +69,13 @@ public class GraphQLRequest {
 
     public void setSelection(Map<String, GraphQLSelection> selection) {
         this.selection = selection;
+    }
+
+    public List<GraphQLSelection> getSelectionList() {
+        return selectionList;
+    }
+
+    public void setSelectionList(List<GraphQLSelection> selectionList) {
+        this.selectionList = selectionList;
     }
 }

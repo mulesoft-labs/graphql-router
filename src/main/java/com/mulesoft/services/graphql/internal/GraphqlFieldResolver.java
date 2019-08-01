@@ -1,8 +1,8 @@
 package com.mulesoft.services.graphql.internal;
 
+import com.mulesoft.services.graphql.api.GraphQLRequest;
 import com.mulesoft.services.graphql.api.GraphqlWiringAttributes;
 import com.mulesoft.services.graphql.internal.wiring.GraphqlWiringContext;
-import graphql.schema.DataFetchingEnvironment;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.extension.api.annotation.execution.OnError;
 import org.mule.runtime.extension.api.annotation.execution.OnSuccess;
@@ -18,10 +18,7 @@ import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 @EmitsResponse
 @MetadataScope(outputResolver = RouterOuputTypeResolver.class)
