@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [[ -f publish.cfg ]]; then source publish.cfg; fi
 
 if [[ -z ${ORG_ID} ]]; then echo "ORG_ID not defined"; exit 1; fi
