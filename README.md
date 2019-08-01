@@ -45,7 +45,38 @@ to match `/person/car` use:
 <graphql:graphql-field-resolver match="path:/person/car" config-ref="Graphql_Config"/>
 ```
 
-Note: support for regex will be added shortly to the path handling
+Also please note path is a regex pattern matcher, so for example the pattern below would match all fields under person:
+
+```xml
+<graphql:graphql-field-resolver match="path:/person/.*" config-ref="Graphql_Config"/>
+```
+
+Your flow should then return the requested data. Please note that the payload will contain a `GraphQLRequest` (see github sources) object 
+which you can use to see what the query is and tailor returned data.
+
+Also please note that if you're returning a an object structure rather than a single field, you should return that structure
+as java objects. So for example if the user has the following request:
+
+```
+{ person { name, age } }
+```
+
+And your flow matches on the 'person' field (ie:)
+
+```xml
+<graphql:graphql-field-resolver match="path:/person" config-ref="Graphql_Config"/>
+```
+
+Then your returned data should look like this dataweave example:
+
+```
+output application/java
+---
+{
+    name: "John Smith",
+    age: 50
+}
+```
 
 ## Publish to exchange
 
