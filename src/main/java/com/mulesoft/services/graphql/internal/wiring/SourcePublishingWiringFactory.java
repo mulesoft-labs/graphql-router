@@ -34,11 +34,9 @@ public class SourcePublishingWiringFactory implements WiringFactory {
     @SuppressWarnings("unchecked")
     @Override
     public DataFetcher getDataFetcher(final FieldWiringEnvironment environment) {
-        logger.debug("Called get data fetcher for field name: {}", environment.getFieldDefinition().getName());
-
         return new AsyncDataFetcher(dataFetchingEnvironment -> {
             GraphqlWiringContext context = new GraphqlWiringContext(dataFetchingEnvironment);
-
+            logger.debug("Matching graphql request to flow matcher: {}", environment.getFieldDefinition().getName());
             for (GraphqlFieldResolver resolver : resolvers) {
                 String match = resolver.getMatch();
                 boolean matched = false;
@@ -49,13 +47,20 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                         pattern = Pattern.compile(patternStr);
                         patternCache.put(patternStr, pattern);
                     }
-                    if (pattern.matcher(dataFetchingEnvironment.getFieldTypeInfo().getPath().toString()).matches()) {
+                    String pathStr = dataFetchingEnvironment.getFieldTypeInfo().getPath().toString();
+                    logger.debug("Matcher is a path, creating pattern and matching {} against {}", pathStr, patternStr);
+                    if (pattern.matcher(pathStr).matches()) {
+                        logger.debug("Successfully match {} against {}", pathStr, patternStr);
                         matched = true;
+                    } else if (logger.isDebugEnabled()) {
+                        logger.debug("Didn't match {} against {}", pathStr, patternStr);
                     }
                 } else if (match.equalsIgnoreCase("type:" + dataFetchingEnvironment.getFieldType().getName())) {
+                    logger.debug("matched type {}", dataFetchingEnvironment.getFieldType().getName());
                     matched = true;
                 }
                 if (matched) {
+                    logger.debug("Successfully matched {}", match);
                     resolver.handleQuery(context);
                     try {
                         context.awaitForResponse(5, TimeUnit.MINUTES);
@@ -63,6 +68,8 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                         return null;
                     }
                     return context.executionResult.orElse(null);
+                } else if (logger.isDebugEnabled()) {
+                    logger.debug("Failed to match {}", match);
                 }
             }
             Object source = context.getDataFetchingEnvironment().getSource();
