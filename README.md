@@ -101,7 +101,9 @@ Add your exchange credentials to your [maven settings.xml](https://maven.apache.
 </settings>
 ```
 
-Please note that if your anypoint organization uses federated authentication it's a bit more tricky (see https://docs.mulesoft.com/exchange/to-publish-assets-maven for more extensive details], you will need to authenticate with your browser, and go to the following page https://anypoint.mulesoft.com/accounts/api/profile to find the access_token and put in your settings.xml as in below example (please note that token expires after a short while, so you'll have to repeat the step)
+Please note that if your anypoint organization uses federated authentication it's a bit more tricky (see 
+https://docs.mulesoft.com/exchange/to-publish-assets-maven for more extensive details],
+ you will need to authenticate with your browser, and go to the following page https://anypoint.mulesoft.com/accounts/api/profile to find the access_token and put in your settings.xml as in below example (please note that token expires after a short while, so you'll have to repeat the step)
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
