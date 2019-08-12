@@ -28,4 +28,25 @@
         <set-payload value="#[output application/java --- { 'name': 'john smith', 'car': { 'model': 'honda' } }]" />
     </flow>
 
+    <flow name="graphql:bag">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person/bag"/>
+        <logger level="ERROR" message="---- BAG ----"/>
+        <logger level="ERROR" message="#[payload]"/>
+        <set-payload value="#[output application/java --- [{'name': 'foo'}]]"/>
+    </flow>
+
+    <flow name="graphql:bagy">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person/bag"/>
+        <logger level="ERROR" message="---- BAGy ----"/>
+        <logger level="ERROR" message="#[payload]"/>
+        <set-payload value="#[output application/java --- [{ 'y': 'foo'}]]"/>
+    </flow>
+
+    <flow name="graphql:bagz">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person/bag.*?/z"/>
+        <logger level="ERROR" message="---- BAGz----"/>
+        <logger level="ERROR" message="#[payload]"/>
+        <set-payload value="bar"/>
+    </flow>
+
 </mule>

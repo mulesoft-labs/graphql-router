@@ -18,11 +18,17 @@ type Person {
 	name: String,
 	age: Int,
 	active(query: String): Boolean,
-	car: Car
+    car: Car,
+    bag: [Bag]
 }
 
 type Car {
 	make: String,
 	model: String,
 	price: Float
+}
+
+type Bag {
+    y: String,
+    z: String,
 }

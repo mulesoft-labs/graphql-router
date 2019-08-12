@@ -4,6 +4,7 @@ import com.mulesoft.services.graphql.api.GraphQLRequest;
 import com.mulesoft.services.graphql.api.GraphqlWiringAttributes;
 import com.mulesoft.services.graphql.internal.wiring.GraphqlWiringContext;
 import org.mule.runtime.api.exception.MuleException;
+import org.mule.runtime.api.message.Error;
 import org.mule.runtime.extension.api.annotation.execution.OnError;
 import org.mule.runtime.extension.api.annotation.execution.OnSuccess;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
@@ -52,11 +53,11 @@ public class GraphqlFieldResolver extends Source<GraphQLRequest, GraphqlWiringAt
     }
 
     @OnError
-    public void onError(SourceCallbackContext ctx) {
+    public void onError(SourceCallbackContext ctx, Error error) {
         logger.error("Exception while executing flow");
         GraphqlWiringContext wiringContext = ctx.<GraphqlWiringContext>getVariable(WIRING_CONTEXT)
                 .orElseThrow(() -> new RuntimeException("Incorrect wiring of flows..."));
-        wiringContext.sendResponse(null);
+        wiringContext.sendError(error);
     }
 
     @Override
@@ -76,11 +77,10 @@ public class GraphqlFieldResolver extends Source<GraphQLRequest, GraphqlWiringAt
         SourceCallbackContext context = sourceCallback.createContext();
         context.addVariable(WIRING_CONTEXT, wiringContext);
 
-        DefaultGraphqlWiringAttributes attributes = new DefaultGraphqlWiringAttributes(wiringContext.getDataFetchingEnvironment());
+        DefaultGraphqlWiringAttributes attributes = new DefaultGraphqlWiringAttributes(wiringContext.getDataFetchingEnvironment(), new GraphQLRequest(wiringContext.getDataFetchingEnvironment()));
 
         //handle it!
         sourceCallback.handle(Result.<GraphQLRequest,GraphqlWiringAttributes>builder()
-                .output(new GraphQLRequest(wiringContext.getDataFetchingEnvironment()))
                 .attributes(attributes).build(), context);
     }
 }

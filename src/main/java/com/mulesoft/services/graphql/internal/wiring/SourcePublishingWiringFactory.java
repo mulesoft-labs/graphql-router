@@ -5,6 +5,7 @@ import graphql.schema.AsyncDataFetcher;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
+import org.mule.runtime.api.message.Error;
 import org.mule.runtime.api.transformation.TransformationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,10 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                         context.awaitForResponse(5, TimeUnit.MINUTES);
                     } catch (InterruptedException e) {
                         return null;
+                    }
+                    Error error = context.getError();
+                    if (error != null) {
+                        throw new RuntimeException(error.getErrorMessage() != null ? error.getErrorMessage().toString() : error.toString(), error.getCause());
                     }
                     return context.executionResult.orElse(null);
                 } else if (logger.isDebugEnabled()) {

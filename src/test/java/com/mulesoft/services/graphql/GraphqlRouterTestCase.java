@@ -38,12 +38,12 @@ public class GraphqlRouterTestCase extends MuleArtifactFunctionalTestCase {
     @Test
     public void exerciseRouterPerson() throws Exception {
         String payloadValue = (String) flowRunner("router")
-                .withPayload(new TypedValue<>("{\"query\": \"{person(foo : \\\"bar\\\") {name, car { model }, active(query: \\\"true\\\"') }}\"}", DataType.JSON_STRING))
+                .withPayload(new TypedValue<>("{\"query\": \"{person(foo : \\\"bar\\\") {name, car { model }, bag { y, z }, active(query: \\\"true\\\"') }}\"}", DataType.JSON_STRING))
                 .run()
                 .getMessage()
                 .getPayload()
                 .getValue();
 
-        assertThat(payloadValue.replace(" ", "").replace("\n", ""), is("{\"data\":{\"person\":{\"name\":\"johnsmith\",\"car\":{\"model\":\"honda\"},\"active\":null}}}"));
+        assertThat(payloadValue.replace(" ", "").replace("\n", ""), is("{\"data\":{\"person\":{\"name\":\"johnsmith\",\"car\":{\"model\":\"honda\"},\"bag\":[{\"y\":\"foo\",\"z\":\"bar\"}],\"active\":null}}}"));
     }
 }

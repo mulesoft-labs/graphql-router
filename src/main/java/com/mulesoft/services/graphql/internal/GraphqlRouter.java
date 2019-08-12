@@ -3,6 +3,7 @@ package com.mulesoft.services.graphql.internal;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import org.mule.runtime.api.el.BindingContext;
+import org.mule.runtime.api.exception.DefaultMuleException;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class GraphqlRouter {
      */
     @OutputResolver(output = RouterOuputTypeResolver.class)
     @MediaType("application/json")
-    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload) {
+    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload) throws DefaultMuleException {
         String query = (String) payload.get("query");
         String operation = (String) payload.get("operationName");
 
@@ -50,6 +52,11 @@ public class GraphqlRouter {
         ExecutionResult executionResult = config.getEngine().execute(input);
 
         Map<String, Object> result = executionResult.toSpecification();
+
+        Object errors = result.get("errors");
+        if (errors != null && !((Collection) errors).isEmpty()) {
+            throw new DefaultMuleException("Error occurred while processing graphql: " + errors);
+        }
 
         BindingContext ctx = BindingContext.builder()
                 .addBinding("payload", new TypedValue(result, DataType.fromType(result.getClass())))
