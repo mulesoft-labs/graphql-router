@@ -20,7 +20,6 @@ public class GraphqlRouterTestCase extends MuleArtifactFunctionalTestCase {
 
     @Test
     public void exerciseRouter() throws Exception {
-
         String payloadValue = (String) flowRunner("router")
                 .withPayload(new TypedValue<>("{\"query\": \"{hello}\"}", DataType.JSON_STRING))
                 .run()

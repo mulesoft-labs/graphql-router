@@ -4,10 +4,7 @@ import com.mulesoft.services.graphql.internal.GraphQLSelection;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GraphQLRequest {
     private String name;
@@ -77,5 +74,16 @@ public class GraphQLRequest {
 
     public void setSelectionList(List<GraphQLSelection> selectionList) {
         this.selectionList = selectionList;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", GraphQLRequest.class.getSimpleName() + "[", "]")
+                .add("name='" + name + "'")
+                .add("path='" + path + "'")
+                .add("type='" + type + "'")
+                .add("args=" + args)
+                .add("selection=" + selection)
+                .toString();
     }
 }

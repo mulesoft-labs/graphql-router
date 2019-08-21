@@ -5,6 +5,7 @@ import graphql.language.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class GraphQLSelection {
     private String name;
@@ -74,5 +75,14 @@ public class GraphQLSelection {
         } else {
             return value.toString();
         }
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", GraphQLSelection.class.getSimpleName() + "[", "]")
+                .add("name='" + name + "'")
+                .add("args=" + args)
+                .add("childrens=" + childrens)
+                .toString();
     }
 }

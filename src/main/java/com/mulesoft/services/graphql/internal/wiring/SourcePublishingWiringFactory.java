@@ -37,7 +37,8 @@ public class SourcePublishingWiringFactory implements WiringFactory {
     public DataFetcher getDataFetcher(final FieldWiringEnvironment environment) {
         return new AsyncDataFetcher(dataFetchingEnvironment -> {
             GraphqlWiringContext context = new GraphqlWiringContext(dataFetchingEnvironment);
-            logger.debug("Matching graphql request to flow matcher: {}", environment.getFieldDefinition().getName());
+            String pathStr = dataFetchingEnvironment.getFieldTypeInfo().getPath().toString();
+            logger.debug("Matching graphql request {} to flow matcher: {}", pathStr, environment.getFieldDefinition().getName());
             for (GraphqlFieldResolver resolver : resolvers) {
                 String match = resolver.getMatch();
                 boolean matched = false;
@@ -48,7 +49,6 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                         pattern = Pattern.compile(patternStr);
                         patternCache.put(patternStr, pattern);
                     }
-                    String pathStr = dataFetchingEnvironment.getFieldTypeInfo().getPath().toString();
                     logger.debug("Matcher is a path, creating pattern and matching {} against {}", pathStr, patternStr);
                     if (pattern.matcher(pathStr).matches()) {
                         logger.debug("Successfully match {} against {}", pathStr, patternStr);
