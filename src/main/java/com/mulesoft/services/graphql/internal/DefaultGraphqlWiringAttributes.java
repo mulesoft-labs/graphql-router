@@ -8,22 +8,26 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 public class DefaultGraphqlWiringAttributes implements Serializable, com.mulesoft.services.graphql.api.GraphqlWiringAttributes {
-    private final DataFetchingEnvironment wrappedEnvironment;
+    private final DataFetchingEnvironment env;
     private GraphQLRequest request;
 
-    public DefaultGraphqlWiringAttributes(DataFetchingEnvironment wrappedEnvironment, GraphQLRequest request) {
-        this.wrappedEnvironment = wrappedEnvironment;
+    public DefaultGraphqlWiringAttributes(DataFetchingEnvironment env, GraphQLRequest request) {
+        this.env = env;
         this.request = request;
+    }
+
+    public DataFetchingEnvironment getEnv() {
+        return env;
     }
 
     @Override
     public Object getSource() {
-        return wrappedEnvironment.getSource();
+        return env.getSource();
     }
 
     @Override
     public Map<String, Object> getArguments() {
-        return wrappedEnvironment.getArguments();
+        return env.getArguments();
     }
 
     public GraphQLRequest getRequest() {
@@ -33,7 +37,7 @@ public class DefaultGraphqlWiringAttributes implements Serializable, com.mulesof
     @Override
     public String toString() {
         return new StringJoiner(", ", DefaultGraphqlWiringAttributes.class.getSimpleName() + "[", "]")
-                .add("wrappedEnvironment=" + wrappedEnvironment)
+                .add("env=" + env)
                 .add("request=" + request)
                 .toString();
     }

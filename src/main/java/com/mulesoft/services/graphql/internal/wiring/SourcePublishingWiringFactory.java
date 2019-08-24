@@ -61,7 +61,7 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                     matched = true;
                 }
                 if (matched) {
-                    logger.debug("Successfully matched {}", match);
+                    logger.debug("Successfully matched {} against {}", pathStr, match);
                     resolver.handleQuery(context);
                     try {
                         context.awaitForResponse(5, TimeUnit.MINUTES);
@@ -74,13 +74,19 @@ public class SourcePublishingWiringFactory implements WiringFactory {
                     }
                     return context.executionResult.orElse(null);
                 } else if (logger.isDebugEnabled()) {
-                    logger.debug("Failed to match {}", match);
+                    logger.debug("Failed to match {} against {}", pathStr, match);
                 }
             }
+            logger.debug("No match found, checking source for pre-loaded data");
             Object source = context.getDataFetchingEnvironment().getSource();
             if (source != null) {
+                logger.debug("Found pre-loaded source data");
                 if (source instanceof Map) {
-                    return ((Map) source).get(dataFetchingEnvironment.getFieldDefinition().getName());
+                    Object preloadedData = ((Map) source).get(dataFetchingEnvironment.getFieldDefinition().getName());
+                    logger.debug("Preloaded data=" + preloadedData);
+                    return preloadedData;
+                } else {
+                    logger.error("graphql preloaded source data isn't a map: " + source.getClass() + " for path " + pathStr);
                 }
             }
             return null;
