@@ -10,14 +10,20 @@ import java.util.StringJoiner;
 public class DefaultGraphqlWiringAttributes implements Serializable, com.mulesoft.services.graphql.api.GraphqlWiringAttributes {
     private final DataFetchingEnvironment env;
     private GraphQLRequest request;
+    private Map<String, Object> vars;
 
     public DefaultGraphqlWiringAttributes(DataFetchingEnvironment env, GraphQLRequest request) {
         this.env = env;
         this.request = request;
+        vars = env.getContext();
     }
 
     public DataFetchingEnvironment getEnv() {
         return env;
+    }
+
+    public Map<String, Object> getVars() {
+        return vars;
     }
 
     @Override

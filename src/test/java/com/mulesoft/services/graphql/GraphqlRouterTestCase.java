@@ -43,6 +43,6 @@ public class GraphqlRouterTestCase extends MuleArtifactFunctionalTestCase {
                 .getPayload()
                 .getValue();
 
-        assertThat(payloadValue.replace(" ", "").replace("\n", ""), is("{\"data\":{\"person\":{\"name\":\"johnsmith\",\"car\":{\"model\":\"honda\"},\"bag\":[{\"y\":\"foo\",\"z\":\"bar\"}],\"active\":null}}}"));
+        assertThat(payloadValue.replace(" ", "").replace("\n", ""), is("{\"data\":{\"person\":{\"name\":\"johnsmith\",\"car\":{\"model\":\"merc\"},\"bag\":[{\"y\":\"foo\",\"z\":\"bar\"}],\"active\":null}}}"));
     }
 }

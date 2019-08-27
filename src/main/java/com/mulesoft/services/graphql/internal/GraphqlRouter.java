@@ -11,6 +11,7 @@ import org.mule.runtime.core.api.el.ExpressionManager;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.param.Config;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,6 @@ import java.util.Map;
  * This class is a container for operations, every public method in this class will be taken as an extension operation.
  */
 public class GraphqlRouter {
-
-
     @Inject
     private ExpressionManager expressionManager;
 
@@ -40,13 +39,14 @@ public class GraphqlRouter {
      */
     @OutputResolver(output = RouterOuputTypeResolver.class)
     @MediaType("application/json")
-    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload) throws DefaultMuleException {
+    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload, @Optional(defaultValue = "#[{}]") Map<String, Object> vars) throws DefaultMuleException {
         String query = (String) payload.get("query");
         String operation = (String) payload.get("operationName");
 
         ExecutionInput input  = ExecutionInput.newExecutionInput()
             .query(query)
             .operationName(operation)
+                .context(vars)
             .build();
 
         ExecutionResult executionResult = config.getEngine().execute(input);
