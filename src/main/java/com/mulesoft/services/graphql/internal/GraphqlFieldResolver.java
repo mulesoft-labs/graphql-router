@@ -19,6 +19,7 @@ import org.mule.runtime.extension.api.runtime.source.SourceCallbackContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 @EmitsResponse
@@ -57,6 +58,7 @@ public class GraphqlFieldResolver extends Source<GraphQLRequest, GraphqlWiringAt
         logger.error("Exception while executing flow");
         GraphqlWiringContext wiringContext = ctx.<GraphqlWiringContext>getVariable(WIRING_CONTEXT)
                 .orElseThrow(() -> new RuntimeException("Incorrect wiring of flows..."));
+        ((Map<String, Object>) wiringContext.getDataFetchingEnvironment().getContext()).put("__mule_error", error);
         wiringContext.sendError(error);
     }
 

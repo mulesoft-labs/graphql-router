@@ -1,9 +1,12 @@
 package com.mulesoft.services.graphql.internal;
 
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
+import graphql.GraphQLError;
 import org.mule.runtime.api.el.BindingContext;
 import org.mule.runtime.api.exception.DefaultMuleException;
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.api.transformation.TransformationService;
@@ -39,7 +42,7 @@ public class GraphqlRouter {
      */
     @OutputResolver(output = RouterOuputTypeResolver.class)
     @MediaType("application/json")
-    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload, @Optional(defaultValue = "#[{}]") Map<String, Object> vars) throws DefaultMuleException {
+    public Result<String, Map> router(@Config GraphqlConfiguration config, Map<String, Object> payload, @Optional(defaultValue = "#[{}]") Map<String, Object> vars) throws MuleException {
         String query = (String) payload.get("query");
         String operation = (String) payload.get("operationName");
 
@@ -53,8 +56,17 @@ public class GraphqlRouter {
 
         Map<String, Object> result = executionResult.toSpecification();
 
-        Object errors = result.get("errors");
-        if (errors != null && !((Collection) errors).isEmpty()) {
+        Collection errors = (Collection) result.get("errors");
+        if (errors != null && !errors.isEmpty()) {
+            if (executionResult.getErrors().size() == 1) {
+                GraphQLError err = executionResult.getErrors().iterator().next();
+                if (err instanceof ExceptionWhileDataFetching) {
+                    MuleException muleException = findMuleException(((ExceptionWhileDataFetching) err).getException());
+                    if (muleException != null) {
+                        throw muleException;
+                    }
+                }
+            }
             throw new DefaultMuleException("Error occurred while processing graphql: " + errors);
         }
 
@@ -66,6 +78,16 @@ public class GraphqlRouter {
                 .mediaType(org.mule.runtime.api.metadata.MediaType.APPLICATION_JSON)
                 .output(expressionManager.evaluate("payload", DataType.JSON_STRING, ctx).getValue().toString())
                 .build();
+    }
+
+    private MuleException findMuleException(Throwable e) {
+        while (e != null) {
+            if (e instanceof MuleException) {
+                return (MuleException) e;
+            }
+            e = e.getCause();
+        }
+        return null;
     }
 
 }
