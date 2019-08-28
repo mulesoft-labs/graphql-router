@@ -5,7 +5,7 @@ schema {
 
 type Query{
 	hello: String,
-	person: Person
+	person(foo: String): Person
 }
 
 type Mutation {
@@ -17,12 +17,18 @@ type Person {
 	#this is the name of the person.
 	name: String,
 	age: Int,
-	active: Boolean,
-	car: Car
+	active(query: String): Boolean,
+    car: Car,
+    bag: [Bag]
 }
 
 type Car {
 	make: String,
 	model: String,
 	price: Float
+}
+
+type Bag {
+    y: String,
+	z: String
 }

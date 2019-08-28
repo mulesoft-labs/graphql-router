@@ -6,15 +6,40 @@
 
     <graphql:config name="graphql-config" configName="mygraphql" schemaLocation="schema.graphqls" />
 
-
     <flow name="router">
-        <graphql:router config-ref="graphql-config" payload="#[payload]"/>
+        <logger level="INFO" message="INPUT" />
+        <graphql:router config-ref="graphql-config" payload="#[payload]" vars="#[{model: 'merc'}]"/>
+        <logger level="ERROR" message="RESULT" />
         <logger level="ERROR" message="#[payload]" />
     </flow>
 
     <flow name="graphql:hello">
-        <graphql:graphql-field-resolver config-ref="graphql-config" fieldName="hello"/>
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/hello"/>
+        <logger level="ERROR" message="---- HELLO ----" />
+        <logger level="ERROR" message="#[payload]" />
         <set-payload value="world" />
+    </flow>
+
+    <flow name="graphql:person">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/p.r.on"/>
+        <logger level="ERROR" message="---- PERSON ----" />
+        <logger level="ERROR" message="#[payload]" />
+        <set-payload
+                value="#[output application/java --- { 'name': 'john smith', 'car': { 'model': attributes.vars.model } }]"/>
+    </flow>
+
+    <flow name="graphql:bagy">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person/bag"/>
+        <logger level="ERROR" message="---- BAGy ----"/>
+        <logger level="ERROR" message="#[payload]"/>
+        <set-payload value="#[output application/java --- [{ 'y': 'foo'}]]"/>
+    </flow>
+
+    <flow name="graphql:bagz">
+        <graphql:graphql-field-resolver config-ref="graphql-config" match="path:/person/bag.*?/z"/>
+        <logger level="ERROR" message="---- BAGz----"/>
+        <logger level="ERROR" message="#[payload]"/>
+        <set-payload value="bar"/>
     </flow>
 
 </mule>
