@@ -6,12 +6,9 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import org.mule.runtime.api.artifact.Registry;
-import org.mule.runtime.api.component.location.ConfigurationComponentLocator;
 import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.message.Message;
-import org.mule.runtime.api.metadata.TypedValue;
 import org.mule.runtime.core.api.construct.Flow;
-import org.mule.runtime.core.api.construct.FlowConstruct;
 import org.mule.runtime.core.api.event.CoreEvent;
 import org.mule.runtime.core.api.event.EventContextFactory;
 import org.mule.runtime.dsl.api.component.config.DefaultComponentLocation;
@@ -19,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 public class FlowCallingWiringFactory implements WiringFactory {
@@ -65,11 +61,11 @@ public class FlowCallingWiringFactory implements WiringFactory {
     private Object fetchCallingFlow(DataFetchingEnvironment environment) {
         String fieldName = environment.getFieldDefinition().getName();
 
-        logger.info("Need to retrieve flow for type name: " + fieldName);
+        logger.debug("Need to retrieve flow for type name: " + fieldName);
 
         Flow flow = (Flow) lookupFlowForField(fieldName);
 
-        logger.info("Need to invoke the flow: " + flow.getName());
+        logger.debug("Need to invoke the flow: " + flow.getName());
 
 
         Map<String, DataFetchingEnvironment> env = Collections.singletonMap("dataFetchingEnvironment", environment);
