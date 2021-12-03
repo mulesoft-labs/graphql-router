@@ -66,8 +66,8 @@ public class SourcePublishingWiringFactory implements WiringFactory {
 
             try {
                 //TODO - More harcoding!!
-                queue.offer(context, 1, TimeUnit.MINUTES);
-                Object result = context.awaitForResponse(1, TimeUnit.MINUTES);
+                queue.offer(context, 5, TimeUnit.MINUTES);
+                Object result = context.awaitForResponse(5, TimeUnit.MINUTES);
                 return result;
             } catch (RuntimeException ex) {
                 logger.error("Timeout wiring field", ex);
